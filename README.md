@@ -1,264 +1,205 @@
-# PulseHR — Unified HR Management & Intelligent Insights Platform
+# HRMS — Human Resource Management System
 
-<p align="center">
-  <strong>A full-stack HRMS with role-based access, AI-powered insights, and real-time workforce management.</strong>
-</p>
+> Every workday, perfectly aligned.
 
-<p align="center">
-  <img src="https://img.shields.io/badge/FastAPI-009688?style=for-the-badge&logo=fastapi&logoColor=white" alt="FastAPI"/>
-  <img src="https://img.shields.io/badge/React-61DAFB?style=for-the-badge&logo=react&logoColor=black" alt="React"/>
-  <img src="https://img.shields.io/badge/TypeScript-3178C6?style=for-the-badge&logo=typescript&logoColor=white" alt="TypeScript"/>
-  <img src="https://img.shields.io/badge/Supabase-3FCF8E?style=for-the-badge&logo=supabase&logoColor=white" alt="Supabase"/>
-  <img src="https://img.shields.io/badge/Vite-646CFF?style=for-the-badge&logo=vite&logoColor=white" alt="Vite"/>
-  <img src="https://img.shields.io/badge/Vercel-000000?style=for-the-badge&logo=vercel&logoColor=white" alt="Vercel"/>
-</p>
+A full-stack Human Resource Management System built for [Hackathon Name] — covering authentication, role-based access control, attendance tracking, leave management, project management, payroll, and AI-powered HR insights.
 
 ---
 
-## ✨ Features
+## 🚀 Live Demo
 
-| Module | Description |
-| :--- | :--- |
-| **🔐 Authentication** | Supabase GoTrue auth with auto-generated secure passwords, JWT-based sessions, and in-memory token management |
-| **👥 Employee Directory** | Glassmorphic table view with profile avatars, real-time attendance/leave status indicators, and department filtering |
-| **⏰ Attendance** | One-click clock in/out with automatic hours calculation, daily status tracking, and monthly summaries |
-| **🏖️ Leave Management** | Multi-type leave requests (Annual, Sick, Personal, Unpaid) with calendar range picker and approval workflows |
-| **💰 Payroll** | Automated salary processing with deductions, downloadable PDF payslip generation (ReportLab), and payment status tracking |
-| **📋 Projects** | Full project lifecycle management — create, assign, track status (Not Started → In Progress → In Review → Completed) |
-| **🤖 AI HR Insights** | Groq LLM-powered analysis for department staffing, employee burnout prediction, and actionable workforce recommendations |
-| **🔔 Notifications** | Real-time system notifications for project assignments, leave approvals, and attendance alerts |
-| **📅 Unified Calendar** | Integrated calendar view combining attendance records and approved leave periods |
+- **App:** `<your deployed/tunnel URL here>`
+- **API Docs (Swagger):** `<your deployed/tunnel URL here>/docs`
+
+### Demo Accounts
+
+| Role | Email | Password |
+|---|---|---|
+| Employee | `antonio.burnett.0@seed.hrms.com` | `SeedPassword123!` |
+| HR | `christopher.parrish.17@seed.hrms.com` | `SeedPassword123!` |
+| Admin | `jason.zuniga.16@seed.hrms.com` | `SeedPassword123!` |
 
 ---
 
-## 🏗️ Architecture
+## 📋 Overview
+
+HRMS digitizes core HR operations for small-to-medium organizations: onboarding, attendance, leave requests, project assignment, and payroll visibility — with strict role-based permissions across three user types: **Employee**, **HR**, and **Admin**.
+
+### Core Features
+
+- 🔐 **Authentication** — Email/password signup and login with role selection, JWT-based sessions
+- 👤 **Profile Management** — View/edit personal info, department, skills, documents, profile picture
+- 🕐 **Attendance Tracking** — Clock in/out with automatic half-day/present status calculation, auto-marked absences via scheduled job
+- 🌴 **Leave Management** — Apply for Paid/Sick/Unpaid leave with date-range overlap prevention, HR/Admin approval workflow
+- 📁 **Project Management** — Create, assign, and track projects through a status lifecycle with an admin review step
+- 💰 **Payroll** — Salary structure management with automatic net pay calculation and downloadable PDF payslips
+- 🤖 **AI HR Insights** — LLM-generated summaries flagging burnout risk and leave clustering (Admin only)
+- 🔔 **Notifications** — Real-time in-app notifications for leave decisions and project updates
+- 📊 **Role-Based Dashboards** — Distinct views and permissions for Employee, HR, and Admin
+
+---
+
+## 🛠️ Tech Stack
+
+| Layer | Technology |
+|---|---|
+| Frontend | Next.js (React) + TypeScript, Tailwind CSS, Shadcn/ui, TanStack Query |
+| Backend | FastAPI (Python) |
+| Database & Auth | Supabase (PostgreSQL, Row-Level Security, Auth, Storage) |
+| Realtime | Supabase Realtime |
+| Scheduled Jobs | Supabase pg_cron |
+| AI Insights | Groq API (`llama-3.1-8b-instant`) |
+| PDF Generation | ReportLab |
+| Deployment | Vercel (frontend), Cloudflare Tunnel / Render (backend) |
+
+### Why this stack
+
+- **Supabase** provides production-ready Postgres, authentication, and file storage without building auth infrastructure from scratch.
+- **FastAPI** handles business logic (half-day rules, leave overlap checks, payroll calculations) with auto-generated API docs.
+- **Row-Level Security (RLS)** enforces permissions at the database layer — even if the API layer had a bug, the database itself refuses unauthorized reads/writes. FastAPI adds a second layer of role checks on top for defense-in-depth.
+
+---
+
+## 🔒 Security Architecture
+
+Every request is authorized twice:
+
+1. **FastAPI dependency layer** — `require_role()` checks reject requests from the wrong role before touching the database.
+2. **Postgres Row-Level Security** — every table has RLS policies keyed to the calling user's JWT, enforced by the database itself regardless of what the API layer does.
+
+The backend never uses Supabase's service-role key for user-facing requests — it passes the user's own JWT through to Postgres on every query, so RLS applies end-to-end. The service-role key is used only for system operations (database seeding, scheduled jobs).
+
+Column-level write restrictions (e.g., an Employee can edit their `phone` but not their `department`) are enforced by database triggers, not just API validation — closing the gap where standard RLS can restrict *which rows* but not *which columns* are writable.
+
+---
+
+## 👥 Roles & Permissions
+
+| Action | Employee | HR | Admin |
+|---|:---:|:---:|:---:|
+| View/edit own profile (limited fields) | ✅ | ✅ | ✅ |
+| View all employees (Directory) | ❌ | ✅ | ✅ |
+| Edit any employee's profile | ❌ | ✅ | ✅ |
+| Approve/reject leave | ❌ | ✅ | ✅ |
+| View all attendance | ❌ | ✅ | ✅ |
+| Create/assign projects | ❌ | ❌ | ✅ |
+| Edit payroll | ❌ | ❌ | ✅ |
+| View AI Insights | ❌ | ❌ | ✅ |
+
+---
+
+## 🗄️ Database Schema
 
 ```
-┌─────────────────────────────────────────────────────────┐
-│                    Frontend (React + Vite)                │
-│  ┌─────────┐ ┌──────────┐ ┌──────────┐ ┌────────────┐  │
-│  │AuthPage │ │Dashboard │ │Directory │ │ Projects   │  │
-│  │         │ │  View    │ │  View    │ │   View     │  │
-│  └────┬────┘ └────┬─────┘ └────┬─────┘ └─────┬──────┘  │
-│       └───────────┴────────────┴──────────────┘          │
-│                    TanStack Query v5                      │
-└──────────────────────────┬──────────────────────────────┘
-                           │ REST API (JWT Bearer)
-┌──────────────────────────┴──────────────────────────────┐
-│                  Backend (FastAPI)                        │
-│  ┌──────┐ ┌────────┐ ┌───────┐ ┌───────┐ ┌──────────┐  │
-│  │ Auth │ │Payroll │ │Leaves │ │Projects│ │AI Insights│  │
-│  │Router│ │ Router │ │Router │ │ Router │ │  Router   │  │
-│  └──┬───┘ └───┬────┘ └──┬────┘ └───┬───┘ └────┬─────┘  │
-│     └─────────┴─────────┴──────────┴──────────┘          │
-│              Role Guards + Service Client                 │
-└──────────────────────────┬──────────────────────────────┘
-                           │ PostgREST + RLS
-┌──────────────────────────┴──────────────────────────────┐
-│              Supabase (PostgreSQL + GoTrue)               │
-│  ┌────────────────────────────────────────────────────┐  │
-│  │  Row-Level Security · Triggers · SECURITY DEFINER  │  │
-│  │  Functions · Column-level Access Control            │  │
-│  └────────────────────────────────────────────────────┘  │
-└─────────────────────────────────────────────────────────┘
+users            — mirrors auth.users, adds role (Employee/HR/Admin)
+profiles         — personal & job details, skills, documents
+attendance       — daily check-in/out, computed hours, status
+leaves           — leave requests with type, date range, status
+payroll          — salary structure, auto-computed net pay
+projects         — title, assignee, deadline, priority, status
+notifications    — in-app notifications per user
+audit_logs       — admin action history
 ```
 
----
-
-## 🔒 Role-Based Access Control (RBAC)
-
-| Feature | Employee | HR Specialist | Administrator |
-| :--- | :---: | :---: | :---: |
-| View own dashboard | ✅ | ✅ | ✅ |
-| Clock in/out | ✅ | ✅ | ✅ |
-| Request leaves | ✅ | ✅ | ✅ |
-| View own payslips | ✅ | ✅ | ✅ |
-| View all projects | ❌ | ✅ | ✅ |
-| Create/manage projects | ❌ | ✅ | ✅ |
-| Approve/reject leaves | ❌ | ✅ | ✅ |
-| Process payroll | ❌ | ❌ | ✅ |
-| View employee directory | ❌ | ✅ | ✅ |
-| AI HR Insights | ❌ | ✅ | ✅ |
-| Manage user roles | ❌ | ❌ | ✅ |
-| Change password | ✅ | ✅ | ✅ |
+Full schema and RLS policies: [`supabase/migrations/001_initial_schema.sql`](./supabase/migrations/001_initial_schema.sql)
 
 ---
 
-## 🚀 Tech Stack
-
-### Backend
-| Technology | Purpose |
-| :--- | :--- |
-| **FastAPI** | Async Python API framework serving REST endpoints + static SPA |
-| **Supabase / PostgreSQL** | Database with Row-Level Security, triggers, and auth |
-| **ReportLab** | Dynamic PDF generation for monthly payslip statements |
-| **Groq API (Llama 3.1)** | AI-powered HR insights and burnout predictions |
-| **PyJWT** | JWT verification with JWKS endpoint support |
-
-### Frontend
-| Technology | Purpose |
-| :--- | :--- |
-| **React 19 (TypeScript)** | Component-based SPA with hash routing |
-| **Vite** | Fast bundling with HMR for development |
-| **TanStack Query v5** | Cache-driven data fetching with optimistic mutations |
-| **Lucide React** | Crisp, modern icon library |
-| **Custom CSS** | Glassmorphic design system with HSL colors and dark mode |
-
----
-
-## 🛠️ Key Architectural Decisions
-
-1. **Defense in Depth (3-Layer Security)**:
-   - **Client**: Hash-based route guards block unauthorized navigation
-   - **API**: `require_role()` dependency rejects requests with `403 Forbidden`
-   - **Database**: PostgreSQL RLS policies enforce row-level access on every query
-
-2. **In-Memory Token Management**:
-   - Access & refresh tokens stored in memory (not localStorage)
-   - Global fetch interceptor auto-attaches Bearer token and handles 401 refresh flows
-
-3. **Service Client Pattern**:
-   - User-scoped queries use JWT passthrough (`get_supabase_client(token)`) for RLS enforcement
-   - HR write operations use the service-role client (`get_service_client()`) to bypass Admin-only RLS policies
-   - FastAPI role guards ensure only authorized roles reach the service client
-
-4. **No-Orphan Joins**:
-   - Profile lookups done via separate optimized queries to avoid PostgREST PGRST200 join cache issues
-
----
-
-## ⚡ Setup & Installation
+## ⚙️ Setup & Installation
 
 ### Prerequisites
-- Python 3.12+ (managed via [uv](https://docs.astral.sh/uv/))
-- Node.js 18+ & npm
+- Node.js 18+
+- Python 3.12+
+- A Supabase project ([supabase.com](https://supabase.com))
+- A Groq API key ([console.groq.com](https://console.groq.com)) for AI Insights (optional)
 
-### 1. Clone the Repository
+### 1. Clone the repo
 ```bash
-git clone https://github.com/Sayaniadak/odoo_1.git
-cd odoo_1
+git clone https://github.com/<your-org>/<your-repo>.git
+cd <your-repo>
 ```
 
-### 2. Environment Variables
-Create a `.env` file in the root directory:
-```env
-SUPABASE_URL=https://your-project.supabase.co
-SUPABASE_ANON_KEY=your-anon-public-key
-SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
-SUPABASE_JWT_SECRET=your-jwt-secret
-GROQ_API_KEY=your-groq-api-key
+### 2. Set up the database
+1. Create a new Supabase project.
+2. Run the migration in Supabase Studio → SQL Editor:
+   ```
+   supabase/migrations/001_initial_schema.sql
+   ```
+3. Create Storage buckets: `profile_pictures` (public) and `documents` (private), each with an RLS policy scoping uploads to `auth.uid()`.
+4. Authentication → Providers → Email — for local demo/dev convenience, you may disable "Confirm email"; for production use, keep it enabled and configure a real Site URL under Authentication → URL Configuration.
+
+### 3. Backend setup
+```bash
+cd backend
+uv sync   # or: pip install -r requirements.txt --break-system-packages
 ```
 
-### 3. Install Dependencies
-```bash
-# Backend (Python)
-uv sync
-
-# Frontend (Node)
-cd frontend && npm install && cd ..
+Create `backend/.env`:
+```
+SUPABASE_URL=https://<your-project-ref>.supabase.co
+SUPABASE_ANON_KEY=<anon key>
+SUPABASE_SERVICE_ROLE_KEY=<service role key>
+SUPABASE_JWT_SECRET=<jwt secret>
+GROQ_API_KEY=<groq api key>
 ```
 
-### 4. Database Setup
-Run the migration SQL in your Supabase SQL Editor:
+Run the server:
 ```bash
-# Copy contents of supabase/migrations/001_initial_schema.sql
-# Paste and execute in Supabase Dashboard → SQL Editor
-```
-
-### 5. Seed Demo Data (Optional)
-```bash
-uv run python backend/seed.py
-```
-
-### 6. Run Development Servers
-```bash
-# Build frontend production assets
-cd frontend && npm run build && cd ..
-
-# Start the backend (serves both API + frontend)
 uv run uvicorn backend.app.main:app --reload --host 0.0.0.0 --port 8000
 ```
 
-Open **http://localhost:8000** in your browser.
+API docs available at `http://localhost:8000/docs`.
 
----
-
-## 🌐 Deployment
-
-### Vercel Deployment
-
-This project is configured for Vercel deployment with the included `vercel.json`:
-
-1. **Import** the GitHub repo on [vercel.com/new](https://vercel.com/new)
-2. **Set environment variables** in Vercel Dashboard → Settings → Environment Variables:
-   - `SUPABASE_URL`
-   - `SUPABASE_ANON_KEY`
-   - `SUPABASE_SERVICE_ROLE_KEY`
-   - `SUPABASE_JWT_SECRET`
-   - `GROQ_API_KEY`
-3. **Deploy** — Vercel will auto-detect the configuration
-
-### Cloudflare Tunnel (Local Exposure)
+### 4. Seed demo data
 ```bash
-cloudflared tunnel --url http://localhost:8000
+python backend/seed.py
 ```
+Creates 25 employees across 5 departments with 3 months of attendance, leave, and project history. Safe to re-run — it's idempotent.
+
+### 5. Frontend setup
+```bash
+cd frontend
+npm install
+```
+
+Create `frontend/.env.local`:
+```
+NEXT_PUBLIC_SUPABASE_URL=https://<your-project-ref>.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=<anon key>
+NEXT_PUBLIC_API_URL=http://localhost:8000
+```
+
+```bash
+npm run dev
+```
+
+App available at `http://localhost:3000`.
 
 ---
 
-## 👥 Demo Credentials
+## 📖 API Reference
 
-| Role | Email | Password |
-| :--- | :--- | :--- |
-| **Employee** | `antonio.burnett.0@seed.hrms.com` | `SeedPassword123!` |
-| **HR Specialist** | `christopher.parrish.17@seed.hrms.com` | `SeedPassword123!` |
-| **Administrator** | `jason.zuniga.16@seed.hrms.com` | `SeedPassword123!` |
+Full interactive API documentation is auto-generated by FastAPI and available at `/docs` (Swagger UI) once the backend is running. Key endpoint groups:
 
----
+- `POST /api/auth/signup`, `/login`, `/refresh`, `GET /api/auth/me`
+- `GET/PUT /api/profiles/me`, `GET /api/profiles`, `GET/PUT /api/profiles/{user_id}`
+- `POST /api/attendance/check-in`, `/check-out`, `GET /api/attendance/me`, `GET /api/attendance`
+- `POST /api/leaves`, `GET /api/leaves/me`, `GET /api/leaves`, `PUT /api/leaves/{id}/approve`, `/reject`
+- `GET/POST /api/projects`, `PUT /api/projects/{id}`, `/review`, `DELETE /api/projects/{id}`
+- `GET/POST /api/payroll`, `GET /api/payroll/{id}/download`
+- `GET /api/ai/insights`
 
-## 📁 Project Structure
-
-```
-hrms/
-├── backend/
-│   └── app/
-│       ├── main.py              # FastAPI app entry point
-│       ├── auth.py              # JWT verification & role guards
-│       ├── config.py            # Pydantic settings from .env
-│       ├── database.py          # Supabase client factory
-│       └── routers/
-│           ├── auth.py          # Signup, login, password change
-│           ├── profiles.py      # Employee profiles CRUD
-│           ├── attendance.py    # Clock in/out & records
-│           ├── leaves.py        # Leave requests & approvals
-│           ├── payroll.py       # Salary processing & PDF slips
-│           ├── projects.py      # Project lifecycle management
-│           ├── dashboard.py     # Dashboard statistics
-│           └── ai_insights.py   # Groq LLM analysis
-├── frontend/
-│   └── src/
-│       ├── App.tsx              # Root app with auth state
-│       ├── index.css            # Glassmorphic design system
-│       └── components/
-│           ├── AuthPage.tsx     # Login/signup with auto-password
-│           ├── DashboardLayout.tsx  # Sidebar navigation
-│           ├── DashboardView.tsx    # Profile & stats
-│           ├── DirectoryView.tsx    # Employee table
-│           ├── AttendanceView.tsx   # Clock in/out
-│           ├── LeavesView.tsx      # Leave management
-│           ├── PayrollView.tsx     # Payslip viewer
-│           ├── ProjectsView.tsx    # Project board
-│           ├── AiInsightsView.tsx  # AI analysis
-│           └── UnifiedCalendar.tsx # Calendar view
-├── supabase/
-│   └── migrations/
-│       └── 001_initial_schema.sql  # Full DB schema + RLS
-├── vercel.json                  # Vercel deployment config
-├── pyproject.toml               # Python dependencies
-└── .env                         # Environment variables (git-ignored)
-```
+All error responses follow the shape `{"detail": "message"}`.
 
 ---
 
-## 📜 License
+## ⚠️ Known Limitations & Tradeoffs
 
-Built for a 48-hour hackathon. MIT License.
+Built under hackathon time constraints — documented here for transparency rather than hidden:
+
+- **Email verification is disabled by default** in this build's Supabase configuration. The backend fully supports it (distinct error messages for unverified accounts), but the confirmation email's redirect requires a deployed frontend URL to be configured as the Site URL, which wasn't finalized during the hackathon window. Re-enable in Authentication → Providers → Email once a stable frontend URL exists.
+- **Single assignee per project** — `projects.assigned_to` is a single foreign key, not a many-to-many relationship. Multi-person project assignment would require a junction table.
+- **Payroll deductions are a single numeric field**, not itemized (no separate tax/PF/insurance breakdown).
+- **AI Insights** calls an external LLM (Groq) with a timeout and fallback response to avoid blocking the dashboard if the call is slow — the fallback is a generic message, not a cached real insight, if the live call fails.
+
+---
