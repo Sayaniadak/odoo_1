@@ -17,12 +17,16 @@ from pydantic import BaseModel, ConfigDict
 from supabase import Client
 
 from backend.app.auth import get_current_user, require_role, security, CurrentUser
-from backend.app.database import get_supabase_client
+from backend.app.database import get_supabase_client, get_service_client
 
 router = APIRouter(prefix="/api/projects", tags=["Projects"])
 
 def get_db(creds=Depends(security)) -> Client:
     return get_supabase_client(creds.credentials)
+
+def get_admin_db() -> Client:
+    """Service-role client that bypasses RLS — used for HR write ops."""
+    return get_service_client()
 
 
 # ── Models ───────────────────────────────────────────────────────────────────
@@ -58,9 +62,10 @@ class ProjectReview(BaseModel):
 async def create_project(
     data: ProjectCreate,
     user: CurrentUser = Depends(require_role("HR", "Admin")),
-    db: Client = Depends(get_db)
 ):
-    resp = db.table("projects").insert({
+    # Use service client to bypass RLS (which only allows Admin inserts)
+    sdb = get_admin_db()
+    resp = sdb.table("projects").insert({
         "title": data.title,
         "description": data.description,
         "assigned_to": data.assigned_to,
@@ -72,7 +77,7 @@ async def create_project(
     
     if data.assigned_to:
         try:
-            db.rpc("create_notification", {
+            sdb.rpc("create_notification", {
                 "p_user_id": data.assigned_to,
                 "p_title": "Project Assigned",
                 "p_message": f"You have been assigned to project: {data.title}",
@@ -89,7 +94,9 @@ async def get_projects(
     user: CurrentUser = Depends(get_current_user),
     db: Client = Depends(get_db)
 ):
-    query = db.table("projects").select("*")
+    # HR needs service client to see all projects (RLS only shows assigned)
+    client = get_admin_db() if user.role == "HR" else db
+    query = client.table("projects").select("*")
     if user.role not in ("HR", "Admin"):
         query = query.eq("assigned_to", user.id)
         
@@ -103,7 +110,7 @@ async def get_projects(
             [r["created_by"] for r in records if r.get("created_by")]
         ))
         if unique_user_ids:
-            prof_resp = db.table("profiles").select("user_id, full_name").in_("user_id", unique_user_ids).execute()
+            prof_resp = client.table("profiles").select("user_id, full_name").in_("user_id", unique_user_ids).execute()
             prof_map = {p["user_id"]: p for p in prof_resp.data or []}
             for r in records:
                 if r.get("assigned_to"):
@@ -209,9 +216,9 @@ async def review_project(
     project_id: str,
     data: ProjectReview,
     user: CurrentUser = Depends(require_role("HR", "Admin")),
-    db: Client = Depends(get_db)
 ):
-    existing = db.table("projects").select("*").eq("id", project_id).execute()
+    sdb = get_admin_db()
+    existing = sdb.table("projects").select("*").eq("id", project_id).execute()
     if not existing.data:
         raise HTTPException(status.HTTP_404_NOT_FOUND, detail="Project not found")
         
@@ -229,11 +236,11 @@ async def review_project(
     else:
         raise HTTPException(status.HTTP_400_BAD_REQUEST, detail="Action must be 'Approve' or 'Request Changes'.")
         
-    resp = db.table("projects").update({"status": new_status}).eq("id", project_id).execute()
+    resp = sdb.table("projects").update({"status": new_status}).eq("id", project_id).execute()
     
     if project["assigned_to"]:
         try:
-            db.rpc("create_notification", {
+            sdb.rpc("create_notification", {
                 "p_user_id": project["assigned_to"],
                 "p_title": f"Project {data.action}",
                 "p_message": f"Your project '{project['title']}' review result: {msg}",
@@ -249,9 +256,9 @@ async def review_project(
 async def delete_project(
     project_id: str,
     _: CurrentUser = Depends(require_role("HR", "Admin")),
-    db: Client = Depends(get_db)
 ):
-    resp = db.table("projects").delete().eq("id", project_id).execute()
+    sdb = get_admin_db()
+    resp = sdb.table("projects").delete().eq("id", project_id).execute()
     if not resp.data:
         raise HTTPException(status.HTTP_404_NOT_FOUND, detail="Project not found")
     return {"message": "Project deleted successfully"}
