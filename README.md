@@ -1,72 +1,206 @@
 # PulseHR — Unified HR Management & Intelligent Insights Platform
 
-PulseHR is a high-performance, real-time HR Management System (HRMS) built for fast-paced corporate environments. It features role-based access control (RBAC), database-level row-level security (RLS), automated payroll PDF generation, and an intelligent AI analysis engine for predicting employee burnout.
+<p align="center">
+  <strong>A full-stack HRMS with role-based access, AI-powered insights, and real-time workforce management.</strong>
+</p>
+
+<p align="center">
+  <img src="https://img.shields.io/badge/FastAPI-009688?style=for-the-badge&logo=fastapi&logoColor=white" alt="FastAPI"/>
+  <img src="https://img.shields.io/badge/React-61DAFB?style=for-the-badge&logo=react&logoColor=black" alt="React"/>
+  <img src="https://img.shields.io/badge/TypeScript-3178C6?style=for-the-badge&logo=typescript&logoColor=white" alt="TypeScript"/>
+  <img src="https://img.shields.io/badge/Supabase-3FCF8E?style=for-the-badge&logo=supabase&logoColor=white" alt="Supabase"/>
+  <img src="https://img.shields.io/badge/Vite-646CFF?style=for-the-badge&logo=vite&logoColor=white" alt="Vite"/>
+  <img src="https://img.shields.io/badge/Vercel-000000?style=for-the-badge&logo=vercel&logoColor=white" alt="Vercel"/>
+</p>
+
+---
+
+## ✨ Features
+
+| Module | Description |
+| :--- | :--- |
+| **🔐 Authentication** | Supabase GoTrue auth with auto-generated secure passwords, JWT-based sessions, and in-memory token management |
+| **👥 Employee Directory** | Glassmorphic table view with profile avatars, real-time attendance/leave status indicators, and department filtering |
+| **⏰ Attendance** | One-click clock in/out with automatic hours calculation, daily status tracking, and monthly summaries |
+| **🏖️ Leave Management** | Multi-type leave requests (Annual, Sick, Personal, Unpaid) with calendar range picker and approval workflows |
+| **💰 Payroll** | Automated salary processing with deductions, downloadable PDF payslip generation (ReportLab), and payment status tracking |
+| **📋 Projects** | Full project lifecycle management — create, assign, track status (Not Started → In Progress → In Review → Completed) |
+| **🤖 AI HR Insights** | Groq LLM-powered analysis for department staffing, employee burnout prediction, and actionable workforce recommendations |
+| **🔔 Notifications** | Real-time system notifications for project assignments, leave approvals, and attendance alerts |
+| **📅 Unified Calendar** | Integrated calendar view combining attendance records and approved leave periods |
+
+---
+
+## 🏗️ Architecture
+
+```
+┌─────────────────────────────────────────────────────────┐
+│                    Frontend (React + Vite)                │
+│  ┌─────────┐ ┌──────────┐ ┌──────────┐ ┌────────────┐  │
+│  │AuthPage │ │Dashboard │ │Directory │ │ Projects   │  │
+│  │         │ │  View    │ │  View    │ │   View     │  │
+│  └────┬────┘ └────┬─────┘ └────┬─────┘ └─────┬──────┘  │
+│       └───────────┴────────────┴──────────────┘          │
+│                    TanStack Query v5                      │
+└──────────────────────────┬──────────────────────────────┘
+                           │ REST API (JWT Bearer)
+┌──────────────────────────┴──────────────────────────────┐
+│                  Backend (FastAPI)                        │
+│  ┌──────┐ ┌────────┐ ┌───────┐ ┌───────┐ ┌──────────┐  │
+│  │ Auth │ │Payroll │ │Leaves │ │Projects│ │AI Insights│  │
+│  │Router│ │ Router │ │Router │ │ Router │ │  Router   │  │
+│  └──┬───┘ └───┬────┘ └──┬────┘ └───┬───┘ └────┬─────┘  │
+│     └─────────┴─────────┴──────────┴──────────┘          │
+│              Role Guards + Service Client                 │
+└──────────────────────────┬──────────────────────────────┘
+                           │ PostgREST + RLS
+┌──────────────────────────┴──────────────────────────────┐
+│              Supabase (PostgreSQL + GoTrue)               │
+│  ┌────────────────────────────────────────────────────┐  │
+│  │  Row-Level Security · Triggers · SECURITY DEFINER  │  │
+│  │  Functions · Column-level Access Control            │  │
+│  └────────────────────────────────────────────────────┘  │
+└─────────────────────────────────────────────────────────┘
+```
+
+---
+
+## 🔒 Role-Based Access Control (RBAC)
+
+| Feature | Employee | HR Specialist | Administrator |
+| :--- | :---: | :---: | :---: |
+| View own dashboard | ✅ | ✅ | ✅ |
+| Clock in/out | ✅ | ✅ | ✅ |
+| Request leaves | ✅ | ✅ | ✅ |
+| View own payslips | ✅ | ✅ | ✅ |
+| View all projects | ❌ | ✅ | ✅ |
+| Create/manage projects | ❌ | ✅ | ✅ |
+| Approve/reject leaves | ❌ | ✅ | ✅ |
+| Process payroll | ❌ | ❌ | ✅ |
+| View employee directory | ❌ | ✅ | ✅ |
+| AI HR Insights | ❌ | ✅ | ✅ |
+| Manage user roles | ❌ | ❌ | ✅ |
+| Change password | ✅ | ✅ | ✅ |
 
 ---
 
 ## 🚀 Tech Stack
 
 ### Backend
-*   **FastAPI**: Python async framework serving both JSON APIs and static React bundle files.
-*   **Supabase / PostgreSQL**: Secure database layer with Row-Level Security (RLS) policies, triggers, and relational integrity.
-*   **ReportLab**: Dynamic PDF compilation engine generating inline, downloadable monthly payslip statements.
-*   **Groq API / Llama-3.1-8b**: AI analysis model for predicting department staffing bottlenecks and employee burnout.
+| Technology | Purpose |
+| :--- | :--- |
+| **FastAPI** | Async Python API framework serving REST endpoints + static SPA |
+| **Supabase / PostgreSQL** | Database with Row-Level Security, triggers, and auth |
+| **ReportLab** | Dynamic PDF generation for monthly payslip statements |
+| **Groq API (Llama 3.1)** | AI-powered HR insights and burnout predictions |
+| **PyJWT** | JWT verification with JWKS endpoint support |
 
 ### Frontend
-*   **React (TypeScript)**: Structured single-page application (SPA).
-*   **Vite**: Fast bundling and hot module replacement.
-*   **TanStack Query (v5)**: Declarative, cache-driven data synchronization, automated mutations, and loading skeleton states.
-*   **Tailwind CSS**: Harmonies of HSL colors, dark modes, and micro-animations.
+| Technology | Purpose |
+| :--- | :--- |
+| **React 19 (TypeScript)** | Component-based SPA with hash routing |
+| **Vite** | Fast bundling with HMR for development |
+| **TanStack Query v5** | Cache-driven data fetching with optimistic mutations |
+| **Lucide React** | Crisp, modern icon library |
+| **Custom CSS** | Glassmorphic design system with HSL colors and dark mode |
 
 ---
 
 ## 🛠️ Key Architectural Decisions
 
-1.  **Defense in Depth**:
-    *   Client-side routing is strictly gated via hash-based path listeners. If an `Employee` attempts to access Admin paths, the SPA blocks rendering and redirects.
-    *   API-level route guards (e.g., `Depends(require_role("Admin"))`) reject requests server-side, returning `403 Forbidden`.
-    *   Database-layer RLS policies enforce access control rules directly on rows.
-2.  **In-Memory Session Storage**:
-    *   Tokens (`access_token` and `refresh_token`) are held in memory.
-    *   A global `fetch` interceptor automatically appends the Bearer token to all headers, handles `401 Unauthorized` token refreshes, and handles logouts on token expiry.
-3.  **No-Orphan Joins**:
-    *   To bypass PGRST200 join cache issues, the backend fetches relationships using highly-optimized, separate queries mapped on the server, avoiding PostgREST relational dependencies.
+1. **Defense in Depth (3-Layer Security)**:
+   - **Client**: Hash-based route guards block unauthorized navigation
+   - **API**: `require_role()` dependency rejects requests with `403 Forbidden`
+   - **Database**: PostgreSQL RLS policies enforce row-level access on every query
+
+2. **In-Memory Token Management**:
+   - Access & refresh tokens stored in memory (not localStorage)
+   - Global fetch interceptor auto-attaches Bearer token and handles 401 refresh flows
+
+3. **Service Client Pattern**:
+   - User-scoped queries use JWT passthrough (`get_supabase_client(token)`) for RLS enforcement
+   - HR write operations use the service-role client (`get_service_client()`) to bypass Admin-only RLS policies
+   - FastAPI role guards ensure only authorized roles reach the service client
+
+4. **No-Orphan Joins**:
+   - Profile lookups done via separate optimized queries to avoid PostgREST PGRST200 join cache issues
 
 ---
 
 ## ⚡ Setup & Installation
 
-### 1. Prerequisites
-*   Python 3.12+ (managed via `uv`)
-*   Node.js 18+ & `npm`
+### Prerequisites
+- Python 3.12+ (managed via [uv](https://docs.astral.sh/uv/))
+- Node.js 18+ & npm
 
-### 2. Environment Variables (`.env`)
+### 1. Clone the Repository
+```bash
+git clone https://github.com/Sayaniadak/odoo_1.git
+cd odoo_1
+```
+
+### 2. Environment Variables
 Create a `.env` file in the root directory:
 ```env
 SUPABASE_URL=https://your-project.supabase.co
-SUPABASE_SERVICE_KEY=your-service-role-key
-SUPABASE_ANON_KEY=your-anon-client-key
+SUPABASE_ANON_KEY=your-anon-public-key
+SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
+SUPABASE_JWT_SECRET=your-jwt-secret
 GROQ_API_KEY=your-groq-api-key
-JWT_SECRET=your-jwt-auth-secret
 ```
 
-### 3. Run Development Servers
-Start the backend (which also serves the frontend):
+### 3. Install Dependencies
 ```bash
-# In the root hrms directory
+# Backend (Python)
+uv sync
+
+# Frontend (Node)
+cd frontend && npm install && cd ..
+```
+
+### 4. Database Setup
+Run the migration SQL in your Supabase SQL Editor:
+```bash
+# Copy contents of supabase/migrations/001_initial_schema.sql
+# Paste and execute in Supabase Dashboard → SQL Editor
+```
+
+### 5. Seed Demo Data (Optional)
+```bash
+uv run python backend/seed.py
+```
+
+### 6. Run Development Servers
+```bash
+# Build frontend production assets
+cd frontend && npm run build && cd ..
+
+# Start the backend (serves both API + frontend)
 uv run uvicorn backend.app.main:app --reload --host 0.0.0.0 --port 8000
 ```
 
-Start the frontend Vite HMR server:
-```bash
-# In the frontend directory
-npm run dev
-```
+Open **http://localhost:8000** in your browser.
 
-To build the production assets served by FastAPI:
+---
+
+## 🌐 Deployment
+
+### Vercel Deployment
+
+This project is configured for Vercel deployment with the included `vercel.json`:
+
+1. **Import** the GitHub repo on [vercel.com/new](https://vercel.com/new)
+2. **Set environment variables** in Vercel Dashboard → Settings → Environment Variables:
+   - `SUPABASE_URL`
+   - `SUPABASE_ANON_KEY`
+   - `SUPABASE_SERVICE_ROLE_KEY`
+   - `SUPABASE_JWT_SECRET`
+   - `GROQ_API_KEY`
+3. **Deploy** — Vercel will auto-detect the configuration
+
+### Cloudflare Tunnel (Local Exposure)
 ```bash
-# In the frontend directory
-npm run build
+cloudflared tunnel --url http://localhost:8000
 ```
 
 ---
@@ -78,3 +212,53 @@ npm run build
 | **Employee** | `antonio.burnett.0@seed.hrms.com` | `SeedPassword123!` |
 | **HR Specialist** | `christopher.parrish.17@seed.hrms.com` | `SeedPassword123!` |
 | **Administrator** | `jason.zuniga.16@seed.hrms.com` | `SeedPassword123!` |
+
+---
+
+## 📁 Project Structure
+
+```
+hrms/
+├── backend/
+│   └── app/
+│       ├── main.py              # FastAPI app entry point
+│       ├── auth.py              # JWT verification & role guards
+│       ├── config.py            # Pydantic settings from .env
+│       ├── database.py          # Supabase client factory
+│       └── routers/
+│           ├── auth.py          # Signup, login, password change
+│           ├── profiles.py      # Employee profiles CRUD
+│           ├── attendance.py    # Clock in/out & records
+│           ├── leaves.py        # Leave requests & approvals
+│           ├── payroll.py       # Salary processing & PDF slips
+│           ├── projects.py      # Project lifecycle management
+│           ├── dashboard.py     # Dashboard statistics
+│           └── ai_insights.py   # Groq LLM analysis
+├── frontend/
+│   └── src/
+│       ├── App.tsx              # Root app with auth state
+│       ├── index.css            # Glassmorphic design system
+│       └── components/
+│           ├── AuthPage.tsx     # Login/signup with auto-password
+│           ├── DashboardLayout.tsx  # Sidebar navigation
+│           ├── DashboardView.tsx    # Profile & stats
+│           ├── DirectoryView.tsx    # Employee table
+│           ├── AttendanceView.tsx   # Clock in/out
+│           ├── LeavesView.tsx      # Leave management
+│           ├── PayrollView.tsx     # Payslip viewer
+│           ├── ProjectsView.tsx    # Project board
+│           ├── AiInsightsView.tsx  # AI analysis
+│           └── UnifiedCalendar.tsx # Calendar view
+├── supabase/
+│   └── migrations/
+│       └── 001_initial_schema.sql  # Full DB schema + RLS
+├── vercel.json                  # Vercel deployment config
+├── pyproject.toml               # Python dependencies
+└── .env                         # Environment variables (git-ignored)
+```
+
+---
+
+## 📜 License
+
+Built for a 48-hour hackathon. MIT License.
