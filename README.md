@@ -11,15 +11,7 @@ A full-stack Human Resource Management System built for [Hackathon Name] — cov
 - **App:** `<https://domains-connected-rocks-hand.trycloudflare.com/#/>`
 - **API Docs (Swagger):** `<https://domains-connected-rocks-hand.trycloudflare.com/docs#/AI%20Insights/get_ai_insights_api_ai_insights_get>`
 
-### Demo Accounts
 
-| Role | Email | Password |
-|---|---|---|
-| Employee | `antonio.burnett.0@seed.hrms.com` | `SeedPassword123!` |
-| HR | `christopher.parrish.17@seed.hrms.com` | `SeedPassword123!` |
-| Admin | `jason.zuniga.16@seed.hrms.com` | `SeedPassword123!` |
-
----
 
 ##  Overview
 
