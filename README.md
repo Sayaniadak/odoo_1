@@ -8,14 +8,15 @@ A full-stack Human Resource Management System built for [Hackathon Name] — cov
 
 ##  Live Demo
 
-- **App:** `<https://domains-connected-rocks-hand.trycloudflare.com/#/>`
-- **API Docs (Swagger):** `<https://domains-connected-rocks-hand.trycloudflare.com/docs#/AI%20Insights/get_ai_insights_api_ai_insights_get>`
+- **App:** `<https://hrms-one-brown.vercel.app/#/>`
+- **API Docs (Swagger):** `<https://hrms-one-brown.vercel.app/docs>`
 
 ### Demo Accounts
 
 | Role | Email | Password |
 
 | Admin | `john11@gmail.com` | `john11` |
+|Employee| 'jjk@gmail.com'.  | 'jjk' 
 
 ---
 
