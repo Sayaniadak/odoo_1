@@ -2,7 +2,7 @@
   "version": 2,
   "builds": [
     {
-      "src": "backend/app/main.py",
+      "src": "api/index.py",
       "use": "@vercel/python"
     },
     {
@@ -11,11 +11,11 @@
     }
   ],
   "routes": [
-    { "src": "/api/(.*)", "dest": "backend/app/main.py" },
-    { "src": "/health", "dest": "backend/app/main.py" },
-    { "src": "/docs", "dest": "backend/app/main.py" },
-    { "src": "/redoc", "dest": "backend/app/main.py" },
-    { "src": "/openapi.json", "dest": "backend/app/main.py" },
+    { "src": "/api/(.*)", "dest": "api/index.py" },
+    { "src": "/health", "dest": "api/index.py" },
+    { "src": "/docs", "dest": "api/index.py" },
+    { "src": "/redoc", "dest": "api/index.py" },
+    { "src": "/openapi.json", "dest": "api/index.py" },
     { "src": "/assets/(.*)", "dest": "frontend/dist/assets/$1" },
     { "src": "/(.*)", "dest": "frontend/dist/index.html" }
   ]
