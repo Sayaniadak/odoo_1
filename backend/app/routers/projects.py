@@ -33,7 +33,6 @@ class ProjectCreate(BaseModel):
     description: Optional[str] = None
     assigned_to: Optional[str] = None
     deadline: Optional[date] = None
-    start_date: Optional[date] = None
     priority: Optional[str] = None
 
 
@@ -43,7 +42,6 @@ class ProjectUpdate(BaseModel):
     description: Optional[str] = None
     assigned_to: Optional[str] = None
     deadline: Optional[date] = None
-    start_date: Optional[date] = None
     priority: Optional[str] = None
     status: Optional[str] = None
 
@@ -67,7 +65,6 @@ async def create_project(
         "description": data.description,
         "assigned_to": data.assigned_to,
         "deadline": data.deadline.isoformat() if data.deadline else None,
-        "start_date": data.start_date.isoformat() if data.start_date else None,
         "priority": data.priority,
         "created_by": user.id,
         "status": "Not Started"
@@ -165,8 +162,6 @@ async def update_project(
     if "deadline" in updates and updates["deadline"]:
         updates["deadline"] = updates["deadline"].isoformat()
         
-    if "start_date" in updates and updates["start_date"]:
-        updates["start_date"] = updates["start_date"].isoformat()
         
     if user.role != "Admin":
         if project["assigned_to"] != user.id:

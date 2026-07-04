@@ -1,3 +1,7 @@
+
+[tool.vercel]
+entrypoint = "backend.app.main:app"
+
 [project]
 name = "hrms"
 version = "0.1.0"

@@ -24,7 +24,6 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({ user, token, showToa
   const [description, setDescription] = useState('');
   const [assignedTo, setAssignedTo] = useState('');
   const [deadline, setDeadline] = useState('');
-  const [startDate, setStartDate] = useState('');
   const [priority, setPriority] = useState('Medium');
 
   const canManage = user.role === 'Admin' || user.role === 'HR';
@@ -77,7 +76,6 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({ user, token, showToa
       setDescription('');
       setAssignedTo('');
       setDeadline('');
-      setStartDate('');
       setPriority('Medium');
       queryClient.invalidateQueries({ queryKey: ['projectsList'] });
     },
@@ -162,7 +160,6 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({ user, token, showToa
       description,
       assigned_to: assignedTo || null,
       deadline: deadline || null,
-      start_date: startDate || null,
       priority
     });
   };
@@ -217,7 +214,7 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({ user, token, showToa
                         <span><i className="fa-solid fa-flag"></i> {proj.priority}</span>
                       </div>
                       <div className="project-meta-row" style={{ marginTop: '6px' }}>
-                        <span><i className="fa-regular fa-calendar"></i> Period: {proj.start_date || 'N/A'} to {proj.deadline || 'N/A'}</span>
+                        <span><i className="fa-regular fa-calendar"></i> Deadline: {proj.deadline || 'N/A'}</span>
                         <span>By: {creatorName}</span>
                       </div>
 
@@ -313,15 +310,6 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({ user, token, showToa
                 </select>
               </div>
               <div className="form-row" style={{ display: 'flex', gap: '16px', marginBottom: '16px' }}>
-                <div className="form-group" style={{ flex: 1, marginBottom: '0' }}>
-                  <label>Start Date</label>
-                  <input 
-                    type="date" 
-                    value={startDate} 
-                    onChange={e => setStartDate(e.target.value)} 
-                    required 
-                  />
-                </div>
                 <div className="form-group" style={{ flex: 1, marginBottom: '0' }}>
                   <label>Deadline Date</label>
                   <input 
