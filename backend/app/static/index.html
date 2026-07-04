@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PulseHR — Unified HRMS Dashboard</title>
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- Vanilla CSS Stylesheet -->
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+
+  <!-- Loading Overlay -->
+  <div id="loadingOverlay" class="loading-overlay hidden">
+    <div class="spinner"></div>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div id="toastContainer" class="toast-container"></div>
+
+  <!-- Main Wrapper -->
+  <div id="app">
+    <!-- Screen 1: Auth Screen (Login / Signup) -->
+    <div id="authScreen" class="auth-screen">
+      <div class="auth-card">
+        <div class="auth-header">
+          <div class="logo"><i class="fa-solid fa-bolt logo-icon"></i> PulseHR</div>
+          <p class="subtitle">Unified HR Management & AI Insights Platform</p>
+        </div>
+
+        <!-- Tab Selector for Login/Signup -->
+        <div class="auth-tabs">
+          <button id="tabLogin" class="auth-tab active" onclick="switchAuthTab('login')">Sign In</button>
+          <button id="tabSignup" class="auth-tab" onclick="switchAuthTab('signup')">Register</button>
+        </div>
+
+        <!-- Login Form -->
+        <form id="loginForm" class="auth-form" onsubmit="handleLogin(event)">
+          <div class="form-group">
+            <label for="loginEmail">Email Address</label>
+            <div class="input-wrapper">
+              <i class="fa-regular fa-envelope input-icon"></i>
+              <input type="email" id="loginEmail" placeholder="you@company.com" required>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="loginPassword">Password</label>
+            <div class="input-wrapper">
+              <i class="fa-solid fa-lock input-icon"></i>
+              <input type="password" id="loginPassword" placeholder="••••••••" required>
+            </div>
+          </div>
+          <button type="submit" class="btn btn-primary btn-block">Sign In <i class="fa-solid fa-arrow-right btn-arrow"></i></button>
+        </form>
+
+        <!-- Signup Form -->
+        <form id="signupForm" class="auth-form hidden" onsubmit="handleSignup(event)">
+          <div class="form-group">
+            <label for="signupName">Full Name</label>
+            <div class="input-wrapper">
+              <i class="fa-regular fa-user input-icon"></i>
+              <input type="text" id="signupName" placeholder="Karan Kumar" required>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="signupEmail">Email Address</label>
+            <div class="input-wrapper">
+              <i class="fa-regular fa-envelope input-icon"></i>
+              <input type="email" id="signupEmail" placeholder="you@company.com" required>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="signupPassword">Password</label>
+            <div class="input-wrapper">
+              <i class="fa-solid fa-lock input-icon"></i>
+              <input type="password" id="signupPassword" placeholder="Minimum 6 characters" minlength="6" required>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="signupRole">Select Position Role</label>
+            <div class="input-wrapper">
+              <i class="fa-solid fa-users-gear input-icon"></i>
+              <select id="signupRole" required>
+                <option value="Employee">Employee (Normal Access)</option>
+                <option value="HR">HR Specialist</option>
+                <option value="Admin">Administrator (Full Access)</option>
+              </select>
+            </div>
+          </div>
+          <button type="submit" class="btn btn-primary btn-block">Create Account <i class="fa-solid fa-circle-check btn-arrow"></i></button>
+        </form>
+      </div>
+    </div>
+
+    <!-- Screen 2: Dashboard Screen -->
+    <div id="dashboardScreen" class="dashboard-screen hidden">
+      <!-- Sidebar Navigation -->
+      <aside class="sidebar">
+        <div class="sidebar-logo">
+          <i class="fa-solid fa-bolt logo-icon"></i> PulseHR
+        </div>
+
+        <div class="user-profile-badge">
+          <div class="profile-avatar" id="sidebarAvatar">
+            <i class="fa-solid fa-user"></i>
+          </div>
+          <div class="profile-info">
+            <div class="profile-name" id="sidebarName">Loading...</div>
+            <div class="profile-role-tag" id="sidebarRole">Employee</div>
+          </div>
+        </div>
+
+        <nav class="sidebar-nav">
+          <!-- Common Tab -->
+          <button class="nav-item active" onclick="switchTab('dashboard')">
+            <i class="fa-solid fa-chart-pie"></i> Dashboard
+          </button>
+          
+          <!-- Employee/HR/Admin Conditional Tabs -->
+          <button class="nav-item" id="navAttendance" onclick="switchTab('attendance')">
+            <i class="fa-regular fa-clock"></i> Attendance
+          </button>
+          
+          <button class="nav-item" id="navLeaves" onclick="switchTab('leaves')">
+            <i class="fa-regular fa-calendar-check"></i> Leaves
+          </button>
+
+          <button class="nav-item" id="navProjects" onclick="switchTab('projects')">
+            <i class="fa-solid fa-cubes"></i> Projects
+          </button>
+
+          <button class="nav-item" id="navPayroll" onclick="switchTab('payroll')">
+            <i class="fa-solid fa-wallet"></i> Payroll
+          </button>
+
+          <!-- Admin-Only Tab -->
+          <button class="nav-item nav-ai-insights hidden" id="navAi" onclick="switchTab('ai')">
+            <i class="fa-solid fa-wand-magic-sparkles"></i> AI HR Insights
+          </button>
+        </nav>
+
+        <div class="sidebar-footer">
+          <button class="btn btn-logout" onclick="handleLogout()">
+            <i class="fa-solid fa-arrow-right-from-bracket"></i> Sign Out
+          </button>
+        </div>
+      </aside>
+
+      <!-- Main Panel Area -->
+      <main class="main-content">
+        <!-- Top Bar Header -->
+        <header class="top-bar">
+          <div class="page-title-slot">
+            <h1 id="pageHeading">Overview Dashboard</h1>
+            <p id="pageSubheading" class="text-muted">Welcome back to PulseHR.</p>
+          </div>
+          <div class="top-bar-actions">
+            <!-- Dynamic clock indicator for Employees -->
+            <div id="clockWidget" class="clock-widget hidden">
+              <span id="currentTime">12:00 PM</span>
+              <button id="btnCheckIn" class="btn btn-sm btn-success" onclick="triggerClockAction('check-in')">
+                <i class="fa-solid fa-right-to-bracket"></i> Clock In
+              </button>
+              <button id="btnCheckOut" class="btn btn-sm btn-danger hidden" onclick="triggerClockAction('check-out')">
+                <i class="fa-solid fa-right-from-bracket"></i> Clock Out
+              </button>
+            </div>
+          </div>
+        </header>
+
+        <!-- Dynamic Content Sections -->
+        <div id="contentArea">
+
+          <!-- Section: Summary Dashboard -->
+          <section id="secDashboard" class="tab-content">
+            <!-- HR/Admin Metrics Block -->
+            <div id="adminMetricsGrid" class="metrics-grid hidden">
+              <div class="metric-card">
+                <div class="metric-icon bg-blue-tint"><i class="fa-solid fa-users"></i></div>
+                <div class="metric-data">
+                  <span class="metric-label">Total Employees</span>
+                  <span class="metric-value" id="metricTotalEmployees">0</span>
+                </div>
+              </div>
+              <div class="metric-card">
+                <div class="metric-icon bg-green-tint"><i class="fa-regular fa-calendar-check"></i></div>
+                <div class="metric-data">
+                  <span class="metric-label">On Leave Today</span>
+                  <span class="metric-value" id="metricActiveLeaves">0</span>
+                </div>
+              </div>
+              <div class="metric-card">
+                <div class="metric-icon bg-purple-tint"><i class="fa-solid fa-hourglass-half"></i></div>
+                <div class="metric-data">
+                  <span class="metric-label">Pending Approvals</span>
+                  <span class="metric-value" id="metricPendingApprovals">0</span>
+                </div>
+              </div>
+              <div class="metric-card">
+                <div class="metric-icon bg-amber-tint"><i class="fa-solid fa-diagram-project"></i></div>
+                <div class="metric-data">
+                  <span class="metric-label">Active Projects</span>
+                  <span class="metric-value" id="metricActiveProjects">0</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Employee Quick Stats Grid -->
+            <div id="employeeStatsGrid" class="metrics-grid">
+              <div class="metric-card">
+                <div class="metric-icon bg-green-tint"><i class="fa-regular fa-clock"></i></div>
+                <div class="metric-data">
+                  <span class="metric-label">Today Status</span>
+                  <span class="metric-value" id="empTodayStatus">Not Clocked In</span>
+                </div>
+              </div>
+              <div class="metric-card">
+                <div class="metric-icon bg-blue-tint"><i class="fa-solid fa-briefcase"></i></div>
+                <div class="metric-data">
+                  <span class="metric-label">Leaves Taken</span>
+                  <span class="metric-value" id="empLeavesCount">0 days</span>
+                </div>
+              </div>
+              <div class="metric-card">
+                <div class="metric-icon bg-purple-tint"><i class="fa-solid fa-diagram-project"></i></div>
+                <div class="metric-data">
+                  <span class="metric-label">My Projects</span>
+                  <span class="metric-value" id="empProjectsCount">0 Active</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Dashboard Splits -->
+            <div class="dashboard-splits">
+              <!-- Left Side: Interactive Actions & Lists -->
+              <div class="split-left">
+                <!-- Profile Edit Card -->
+                <div class="card glass">
+                  <div class="card-header">
+                    <h3><i class="fa-regular fa-id-card"></i> My Professional Profile</h3>
+                  </div>
+                  <div class="card-body">
+                    <form id="profileEditForm" onsubmit="handleProfileUpdate(event)">
+                      <div class="profile-photo-row">
+                        <div class="avatar-edit-wrapper">
+                          <img id="profilePicturePreview" src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&auto=format&fit=crop&q=60" alt="Avatar">
+                          <label for="profilePhotoInput" class="avatar-edit-btn"><i class="fa-solid fa-camera"></i></label>
+                          <input type="file" id="profilePhotoInput" accept="image/*" onchange="uploadProfilePhoto(event)" style="display:none;">
+                        </div>
+                        <div class="profile-summary-meta">
+                          <h4 id="profileNameText">Loading Name...</h4>
+                          <p id="profileJobText" class="text-muted">Loading Role...</p>
+                        </div>
+                      </div>
+                      
+                      <div class="form-row">
+                        <div class="form-group col-6">
+                          <label for="profilePhone">Phone Number</label>
+                          <input type="text" id="profilePhone" placeholder="+91 99999 99999">
+                        </div>
+                        <div class="form-group col-6">
+                          <label for="profileAddress">Postal Address</label>
+                          <input type="text" id="profileAddress" placeholder="City, State">
+                        </div>
+                      </div>
+                      <div class="form-group">
+                        <label for="profileSkills">Professional Skills (Comma separated)</label>
+                        <input type="text" id="profileSkills" placeholder="React, Node.js, Python, SQL">
+                      </div>
+                      <button type="submit" class="btn btn-sm btn-primary">Save Profile Info</button>
+                    </form>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Right Side: Unified Calendar or Feeds -->
+              <div class="split-right">
+                <!-- Notifications Card -->
+                <div class="card glass">
+                  <div class="card-header">
+                    <h3><i class="fa-regular fa-bell"></i> System Announcements</h3>
+                  </div>
+                  <div class="card-body">
+                    <div id="announcementList" class="activity-feed">
+                      <div class="feed-item">
+                        <div class="feed-icon"><i class="fa-solid fa-circle-info text-blue"></i></div>
+                        <div class="feed-desc">
+                          <strong>Welcome to PulseHR!</strong>
+                          <span>FastAPI and Supabase power this real-time system.</span>
+                          <span class="feed-time">Just now</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- Section: Attendance History & Logging -->
+          <section id="secAttendance" class="tab-content hidden">
+            <div class="card glass">
+              <div class="card-header flex-between">
+                <h3>Attendance Timesheets</h3>
+                <div class="filter-row" id="attendanceFilters">
+                  <!-- Date filters will render dynamically -->
+                  <input type="date" id="attendanceFilterFrom" class="input-sm">
+                  <input type="date" id="attendanceFilterTo" class="input-sm">
+                  <button class="btn btn-sm btn-primary" onclick="loadAttendanceData()">Filter</button>
+                </div>
+              </div>
+              <div class="card-body">
+                <div class="table-container">
+                  <table class="data-table">
+                    <thead>
+                      <tr>
+                        <th>Date</th>
+                        <th>Clock In</th>
+                        <th>Clock Out</th>
+                        <th>Hours</th>
+                        <th>Status</th>
+                        <th>Method</th>
+                      </tr>
+                    </thead>
+                    <tbody id="attendanceTableBody">
+                      <tr><td colspan="6" class="text-center text-muted">No attendance logs available.</td></tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- Section: Leaves Applications -->
+          <section id="secLeaves" class="tab-content hidden">
+            <div class="dashboard-splits">
+              <!-- Apply Leave Card (Visible to Employees) -->
+              <div class="split-left" id="leaveApplicationBlock">
+                <div class="card glass">
+                  <div class="card-header">
+                    <h3>Request Time Off</h3>
+                  </div>
+                  <div class="card-body">
+                    <form id="leaveRequestForm" onsubmit="handleApplyLeave(event)">
+                      <div class="form-group">
+                        <label for="leaveType">Leave Type</label>
+                        <select id="leaveType" required>
+                          <option value="Paid">Paid Annual Leave</option>
+                          <option value="Sick">Medical / Sick Leave</option>
+                          <option value="Unpaid">Unpaid Personal Leave</option>
+                        </select>
+                      </div>
+                      <div class="form-row">
+                        <div class="form-group col-6">
+                          <label for="leaveStart">Start Date</label>
+                          <input type="date" id="leaveStart" required>
+                        </div>
+                        <div class="form-group col-6">
+                          <label for="leaveEnd">End Date</label>
+                          <input type="date" id="leaveEnd" required>
+                        </div>
+                      </div>
+                      <div class="form-group">
+                        <label for="leaveReason">Reason for absence</label>
+                        <textarea id="leaveReason" rows="3" placeholder="Provide details..." required></textarea>
+                      </div>
+                      <button type="submit" class="btn btn-primary">Submit Application</button>
+                    </form>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Leaves Table -->
+              <div class="split-right" style="flex: 2;">
+                <div class="card glass">
+                  <div class="card-header">
+                    <h3 id="leavesTableTitle">My Leave Requests</h3>
+                  </div>
+                  <div class="card-body">
+                    <div class="table-container">
+                      <table class="data-table">
+                        <thead>
+                          <tr>
+                            <th>Type</th>
+                            <th>Period</th>
+                            <th>Reason</th>
+                            <th>Status</th>
+                            <th>Manager Comments</th>
+                            <th class="actions-col hidden" id="leavesActionHeader">Actions</th>
+                          </tr>
+                        </thead>
+                        <tbody id="leavesTableBody">
+                          <tr><td colspan="5" class="text-center text-muted">No leave records.</td></tr>
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- Section: Projects Board -->
+          <section id="secProjects" class="tab-content hidden">
+            <div class="card glass">
+              <div class="card-header flex-between">
+                <h3>Assigned Projects</h3>
+                <button class="btn btn-sm btn-primary hidden" id="btnNewProject" onclick="openModal('newProjectModal')">
+                  <i class="fa-solid fa-plus"></i> New Project
+                </button>
+              </div>
+              <div class="card-body">
+                <div class="projects-grid-list" id="projectsGrid">
+                  <!-- Dynamic project cards -->
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- Section: Payroll -->
+          <section id="secPayroll" class="tab-content hidden">
+            <div class="card glass">
+              <div class="card-header flex-between">
+                <h3>Salary Slips & Statements</h3>
+                <button class="btn btn-sm btn-primary hidden" id="btnCreatePayroll" onclick="openModal('createPayrollModal')">
+                  <i class="fa-solid fa-plus"></i> Process Payroll
+                </button>
+              </div>
+              <div class="card-body">
+                <div class="table-container">
+                  <table class="data-table">
+                    <thead>
+                      <tr>
+                        <th>Employee</th>
+                        <th>Month / Period</th>
+                        <th>Base Salary</th>
+                        <th>Deductions</th>
+                        <th>Take-home (Net)</th>
+                        <th>Status</th>
+                        <th>Action</th>
+                      </tr>
+                    </thead>
+                    <tbody id="payrollTableBody">
+                      <tr><td colspan="7" class="text-center text-muted">No payroll statements compiled yet.</td></tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- Section: AI Insights (Admin Only) -->
+          <section id="secAi" class="tab-content hidden">
+            <div class="card glass ai-glow-card">
+              <div class="card-header flex-between">
+                <h3><i class="fa-solid fa-wand-magic-sparkles"></i> Llama 3.1 AI HR Director</h3>
+                <button class="btn btn-sm btn-ai" onclick="loadAiInsights()">
+                  <i class="fa-solid fa-rotate"></i> Refresh Analysis
+                </button>
+              </div>
+              <div class="card-body">
+                <div class="ai-insight-panel">
+                  <div class="ai-model-meta">
+                    <span class="badge badge-purple"><i class="fa-solid fa-brain"></i> llama-3.1-8b-instant</span>
+                    <span class="ai-time" id="aiGeneratedTime">Never analyzed</span>
+                  </div>
+                  
+                  <div class="ai-output" id="aiInsightOutput">
+                    <p class="text-muted">Click "Refresh Analysis" to trigger the Llama-3.1 burnout and leave clash detection engine.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <!-- Modal: Create Project (Admin Only) -->
+  <div id="newProjectModal" class="modal">
+    <div class="modal-content glass">
+      <div class="modal-header">
+        <h3>Create New Project</h3>
+        <span class="close-btn" onclick="closeModal('newProjectModal')">&times;</span>
+      </div>
+      <form id="createProjectForm" onsubmit="handleCreateProject(event)">
+        <div class="form-group">
+          <label for="projTitle">Project Name</label>
+          <input type="text" id="projTitle" placeholder="HRMS Dashboard v2" required>
+        </div>
+        <div class="form-group">
+          <label for="projDesc">Description</label>
+          <textarea id="projDesc" rows="3" placeholder="Define scopes..."></textarea>
+        </div>
+        <div class="form-group">
+          <label for="projAssignee">Assign Employee</label>
+          <select id="projAssignee" required>
+            <!-- Dynamically populated -->
+          </select>
+        </div>
+        <div class="form-row">
+          <div class="form-group col-6">
+            <label for="projDeadline">Deadline Date</label>
+            <input type="date" id="projDeadline" required>
+          </div>
+          <div class="form-group col-6">
+            <label for="projPriority">Priority Level</label>
+            <select id="projPriority" required>
+              <option value="Low">Low</option>
+              <option value="Medium" selected>Medium</option>
+              <option value="High">High</option>
+            </select>
+          </div>
+        </div>
+        <button type="submit" class="btn btn-primary btn-block">Launch Project</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Process Payroll (Admin Only) -->
+  <div id="createPayrollModal" class="modal">
+    <div class="modal-content glass">
+      <div class="modal-header">
+        <h3>Issue Salary Statement</h3>
+        <span class="close-btn" onclick="closeModal('createPayrollModal')">&times;</span>
+      </div>
+      <form id="createPayrollForm" onsubmit="handleCreatePayroll(event)">
+        <div class="form-group">
+          <label for="payUser">Select Employee</label>
+          <select id="payUser" required>
+            <!-- Dynamically populated -->
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="payMonth">Statement Period (YYYY-MM)</label>
+          <input type="month" id="payMonth" required>
+        </div>
+        <div class="form-row">
+          <div class="form-group col-6">
+            <label for="payBase">Base Salary ($)</label>
+            <input type="number" id="payBase" step="0.01" min="0" placeholder="5000.00" required>
+          </div>
+          <div class="form-group col-6">
+            <label for="payDeductions">Total Deductions ($)</label>
+            <input type="number" id="payDeductions" step="0.01" min="0" placeholder="200.00" required>
+          </div>
+        </div>
+        <button type="submit" class="btn btn-primary btn-block">Confirm & Issue Salary</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Script File -->
+  <script src="/static/app.js"></script>
+</body>
+</html>
