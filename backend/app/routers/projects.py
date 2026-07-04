@@ -28,7 +28,7 @@ def get_db(creds=Depends(security)) -> Client:
 # ── Models ───────────────────────────────────────────────────────────────────
 
 class ProjectCreate(BaseModel):
-    model_config = ConfigDict(extra="forbid")
+    model_config = ConfigDict(extra="ignore")
     title: str
     description: Optional[str] = None
     assigned_to: Optional[str] = None
