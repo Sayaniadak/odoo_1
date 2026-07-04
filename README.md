@@ -11,7 +11,13 @@ A full-stack Human Resource Management System built for [Hackathon Name] — cov
 - **App:** `<https://domains-connected-rocks-hand.trycloudflare.com/#/>`
 - **API Docs (Swagger):** `<https://domains-connected-rocks-hand.trycloudflare.com/docs#/AI%20Insights/get_ai_insights_api_ai_insights_get>`
 
+### Demo Accounts
 
+| Role | Email | Password |
+
+| Admin | `john11@gmail.com` | `john11` |
+
+---
 
 ##  Overview
 
