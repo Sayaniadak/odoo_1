@@ -6,10 +6,10 @@ A full-stack Human Resource Management System built for [Hackathon Name] — cov
 
 ---
 
-## 🚀 Live Demo
+##  Live Demo
 
-- **App:** `<your deployed/tunnel URL here>`
-- **API Docs (Swagger):** `<your deployed/tunnel URL here>/docs`
+- **App:** `<https://domains-connected-rocks-hand.trycloudflare.com/#/>`
+- **API Docs (Swagger):** `<https://domains-connected-rocks-hand.trycloudflare.com/docs#/AI%20Insights/get_ai_insights_api_ai_insights_get>`
 
 ### Demo Accounts
 
@@ -21,7 +21,7 @@ A full-stack Human Resource Management System built for [Hackathon Name] — cov
 
 ---
 
-## 📋 Overview
+##  Overview
 
 HRMS digitizes core HR operations for small-to-medium organizations: onboarding, attendance, leave requests, project assignment, and payroll visibility — with strict role-based permissions across three user types: **Employee**, **HR**, and **Admin**.
 
